@@ -1,7 +1,7 @@
 {
   "name": "dry-run-raven",
   "productName": "Dry Run Raven",
-  "version": "0.1.0",
+  "version": "1.1.2",
   "description": "Pseudo-code algoritma yazma, çalıştırma, test etme ve akış şeması dönüştürme aracı",
   "scripts": {
     "dev": "vite",
