@@ -1,0 +1,657 @@
+[
+  {
+    "id": 1,
+    "titleTr": "10 sayıdan pozitif olanların sayısı",
+    "titleEn": "Count positive numbers among 10",
+    "textTr": "Girilen 10 sayının kaç tanesinin pozitif (0 dahil) olduğunu bulan algoritmayı yazın.",
+    "textEn": "Write an algorithm that counts how many of 10 entered numbers are positive (including 0).",
+    "solution": "1- Başla\n2- say = 0, psay = 0\n3- Sayı Gir (A)\n4- say++\n5- if (A >= 0) Then psay++\n6- if (say < 10) Then goto 3\n7- Print (psay)\n8- Dur.",
+    "tests": [
+      {
+        "name": "Hepsi pozitif",
+        "inputs": "5 1 0 3 7 2 9 4 6 8",
+        "expected": "10"
+      },
+      {
+        "name": "Karışık",
+        "inputs": "5 -1 0 7 -3 2 9 -8 4 6",
+        "expected": "7"
+      },
+      {
+        "name": "Hepsi negatif",
+        "inputs": "-1 -2 -3 -4 -5 -6 -7 -8 -9 -10",
+        "expected": "0"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "titleTr": "3 sayının negatiflerinin toplamı",
+    "titleEn": "Sum of negative numbers among 3",
+    "textTr": "Girilen 3 sayının negatif olanlarının toplamını bulan algoritmayı yazın.",
+    "textEn": "Write an algorithm that finds the sum of the negative numbers among 3 entered numbers.",
+    "solution": "1- Başla\n2- NT = 0\n3- Sayıları Gir (A, B, C)\n4- if (A < 0) Then NT = NT + A\n5- if (B < 0) Then NT = NT + B\n6- if (C < 0) Then NT = NT + C\n7- Print (NT)\n8- Dur.",
+    "tests": [
+      {
+        "name": "İki negatif",
+        "inputs": "-5 3 -2",
+        "expected": "-7"
+      },
+      {
+        "name": "Negatif yok",
+        "inputs": "1 2 3",
+        "expected": "0"
+      },
+      {
+        "name": "Hepsi negatif",
+        "inputs": "-1 -2 -3",
+        "expected": "-6"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "titleTr": "3 sayının pozitif ve negatif adedi",
+    "titleEn": "Positive and negative counts of 3",
+    "textTr": "Girilen 3 sayının kaçının pozitif, kaçının negatif olduğunu yazdırın (sıfır hiçbirine sayılmaz).",
+    "textEn": "Print how many of 3 entered numbers are positive and how many are negative (zero counts as neither).",
+    "solution": "1- Başla\n2- Poz = 0, Neg = 0\n3- Sayıları Gir (A, B, C)\n4- if (A > 0) Then Poz++\n5- if (A < 0) Then Neg++\n6- if (B > 0) Then Poz++\n7- if (B < 0) Then Neg++\n8- if (C > 0) Then Poz++\n9- if (C < 0) Then Neg++\n10- Print (Poz, Neg)\n11- Dur.",
+    "tests": [
+      {
+        "name": "Bir pozitif bir negatif",
+        "inputs": "5 -2 0",
+        "expected": "1 1"
+      },
+      {
+        "name": "Hepsi negatif",
+        "inputs": "-1 -2 -3",
+        "expected": "0 3"
+      },
+      {
+        "name": "Hepsi pozitif",
+        "inputs": "1 2 3",
+        "expected": "3 0"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "titleTr": "Sayının işareti",
+    "titleEn": "Sign of a number",
+    "textTr": "Girilen sayının Pozitif, Negatif veya Sıfır olduğunu yazdırın.",
+    "textEn": "Print whether the entered number is Positive, Negative or Zero.",
+    "solution": "1- Başla\n2- Sayı Gir (A)\n3- if (A > 0) Then Print (\"Pozitif\")\n4- else if (A < 0) Then Print (\"Negatif\")\n5- else Print (\"Sıfır\")\n6- Dur.",
+    "tests": [
+      {
+        "name": "Pozitif",
+        "inputs": "5",
+        "expected": "Pozitif"
+      },
+      {
+        "name": "Negatif",
+        "inputs": "-3",
+        "expected": "Negatif"
+      },
+      {
+        "name": "Sıfır",
+        "inputs": "0",
+        "expected": "Sıfır"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "titleTr": "2 sayının en büyüğü",
+    "titleEn": "Largest of 2 numbers",
+    "textTr": "Girilen 2 sayının en büyüğünü yazdırın; sayılar eşitse \"Eşit\" yazdırın.",
+    "textEn": "Print the largest of 2 numbers; print \"Eşit\" if they are equal.",
+    "solution": "1- Başla\n2- Sayıları Gir (A, B)\n3- if (A > B) Then Print (A)\n4- else if (B > A) Then Print (B)\n5- else Print (\"Eşit\")\n6- Dur.",
+    "tests": [
+      {
+        "name": "Birinci büyük",
+        "inputs": "5 3",
+        "expected": "5"
+      },
+      {
+        "name": "İkinci büyük",
+        "inputs": "3 5",
+        "expected": "5"
+      },
+      {
+        "name": "Eşit",
+        "inputs": "4 4",
+        "expected": "Eşit"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "titleTr": "3 sayının en büyüğü",
+    "titleEn": "Largest of 3 numbers",
+    "textTr": "Girilen 3 sayının en büyüğünü bulan algoritmayı üç farklı yöntemle düşünün; en az birini yazın.",
+    "textEn": "Find the largest of 3 numbers. Think of three different methods and write at least one.",
+    "solution": "1- Başla\n2- Sayıları Gir (A, B, C)\n3- if (A >= B) Then EB = A\n4- else EB = B\n5- if (C > EB) Then EB = C\n6- Print (EB)\n7- Dur.",
+    "tests": [
+      {
+        "name": "Üçüncü büyük",
+        "inputs": "1 2 3",
+        "expected": "3"
+      },
+      {
+        "name": "Birinci büyük",
+        "inputs": "3 2 1",
+        "expected": "3"
+      },
+      {
+        "name": "Hepsi eşit",
+        "inputs": "2 2 2",
+        "expected": "2"
+      },
+      {
+        "name": "Negatifler",
+        "inputs": "-5 -1 -3",
+        "expected": "-1"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "titleTr": "3 sayının toplamı ve en küçüğü",
+    "titleEn": "Sum and minimum of 3 numbers",
+    "textTr": "Girilen 3 sayının toplamını ve en küçüğünü bulup yazdırın.",
+    "textEn": "Find and print the sum and the minimum of 3 entered numbers.",
+    "solution": "1- Başla\n2- Sayıları Gir (A, B, C)\n3- Top = A + B + C\n4- if (A < B) Then EK = A\n5- else EK = B\n6- if (C < EK) Then EK = C\n7- Print (Top, EK)\n8- Dur.",
+    "tests": [
+      {
+        "name": "PDF örneği",
+        "inputs": "5 20 2",
+        "expected": "27 2"
+      },
+      {
+        "name": "Sıralı",
+        "inputs": "1 2 3",
+        "expected": "6 1"
+      },
+      {
+        "name": "Eşit",
+        "inputs": "3 3 3",
+        "expected": "9 3"
+      },
+      {
+        "name": "Negatif",
+        "inputs": "-1 -5 0",
+        "expected": "-6 -5"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "titleTr": "3 sayıyı küçükten büyüğe sırala",
+    "titleEn": "Sort 3 numbers ascending",
+    "textTr": "Girilen 3 sayıyı yer değiştirme işlemleriyle küçükten büyüğe sıralayıp yazdırın.",
+    "textEn": "Sort 3 entered numbers ascending using swaps and print them.",
+    "solution": "1- Başla\n2- Sayıları Gir (A, B, C)\n3- if (A > B) Then T = A, A = B, B = T\n4- if (A > C) Then T = A, A = C, C = T\n5- if (B > C) Then T = B, B = C, C = T\n6- Print (A, B, C)\n7- Dur.",
+    "tests": [
+      {
+        "name": "Ters sıralı",
+        "inputs": "3 2 1",
+        "expected": "1 2 3"
+      },
+      {
+        "name": "Karışık",
+        "inputs": "5 1 3",
+        "expected": "1 3 5"
+      },
+      {
+        "name": "Zaten sıralı",
+        "inputs": "-2 0 7",
+        "expected": "-2 0 7"
+      },
+      {
+        "name": "Eşitler",
+        "inputs": "4 2 2",
+        "expected": "2 2 4"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "titleTr": "3 sayının en büyüğü ile en küçüğünün yerini değiştir",
+    "titleEn": "Swap max and min of 3 numbers",
+    "textTr": "Girilen 3 sayının en büyüğü ile en küçüğünün yerlerini değiştirip sayıları yazdırın.",
+    "textEn": "Swap the largest and smallest of 3 entered numbers and print the numbers.",
+    "solution": "1- Başla\n2- Sayıları Gir (A, B, C)\n3- EB = A, EBY = 1\n4- if (B > EB) Then EB = B, EBY = 2\n5- if (C > EB) Then EB = C, EBY = 3\n6- EK = A, EKY = 1\n7- if (B < EK) Then EK = B, EKY = 2\n8- if (C < EK) Then EK = C, EKY = 3\n9- if (EBY == 1 and EKY == 2) Then T = A, A = B, B = T\n10- if (EBY == 1 and EKY == 3) Then T = A, A = C, C = T\n11- if (EBY == 2 and EKY == 1) Then T = B, B = A, A = T\n12- if (EBY == 2 and EKY == 3) Then T = B, B = C, C = T\n13- if (EBY == 3 and EKY == 1) Then T = C, C = A, A = T\n14- if (EBY == 3 and EKY == 2) Then T = C, C = B, B = T\n15- Print (A, B, C)\n16- Dur.",
+    "tests": [
+      {
+        "name": "PDF örneği",
+        "inputs": "10 5 2",
+        "expected": "2 5 10"
+      },
+      {
+        "name": "Artan sıralı",
+        "inputs": "1 2 3",
+        "expected": "3 2 1"
+      },
+      {
+        "name": "Eşitlik",
+        "inputs": "5 5 1",
+        "expected": "1 5 5"
+      },
+      {
+        "name": "Negatif",
+        "inputs": "-1 4 0",
+        "expected": "4 -1 0"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "titleTr": "1–10 arası sayıların toplamı",
+    "titleEn": "Sum of 1–10",
+    "textTr": "1’den 10’a kadar olan tamsayıların toplamını sayaç kullanarak bulun.",
+    "textEn": "Find the sum of integers from 1 to 10 using a counter.",
+    "solution": "1- Başla\n2- say = 1, T = 0\n3- T = T + say\n4- say++\n5- if (say <= 10) Then goto 3\n6- Print (T)\n7- Dur.",
+    "tests": [
+      {
+        "name": "Toplam",
+        "inputs": "",
+        "expected": "55"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "titleTr": "10 sayının toplamı",
+    "titleEn": "Sum of 10 numbers",
+    "textTr": "Girilen 10 sayının toplamını bulun.",
+    "textEn": "Find the sum of 10 entered numbers.",
+    "solution": "1- Başla\n2- say = 0, T = 0\n3- Sayı Gir (A)\n4- T = T + A\n5- say++\n6- if (say < 10) Then goto 3\n7- Print (T)\n8- Dur.",
+    "tests": [
+      {
+        "name": "1–10",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "55"
+      },
+      {
+        "name": "Negatifler",
+        "inputs": "-5 10 -2 3 0 1 -1 8 -4 2",
+        "expected": "12"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "titleTr": "10 sayıdan negatif olanların sayısı",
+    "titleEn": "Count negatives among 10",
+    "textTr": "Girilen 10 sayıdan kaç tanesinin negatif olduğunu bulun.",
+    "textEn": "Count how many of 10 entered numbers are negative.",
+    "solution": "1- Başla\n2- say = 0, nsay = 0\n3- Sayı Gir (A)\n4- say++\n5- if (A < 0) Then nsay++\n6- if (say < 10) Then goto 3\n7- Print (nsay)\n8- Dur.",
+    "tests": [
+      {
+        "name": "Karışık",
+        "inputs": "5 -1 0 7 -3 2 9 -8 4 6",
+        "expected": "3"
+      },
+      {
+        "name": "Negatif yok",
+        "inputs": "1 2 3 4 5 6 7 8 9 0",
+        "expected": "0"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "titleTr": "10 sayıdan çiftlerin toplamı",
+    "titleEn": "Sum of even numbers among 10",
+    "textTr": "Girilen 10 sayıdan çift olanların toplamını mod işlemiyle bulun.",
+    "textEn": "Find the sum of the even numbers among 10 using mod.",
+    "solution": "1- Başla\n2- say = 0, T = 0\n3- Sayı Gir (A)\n4- if (A mod 2 == 0) Then T = T + A\n5- say++\n6- if (say < 10) Then goto 3\n7- Print (T)\n8- Dur.",
+    "tests": [
+      {
+        "name": "Karışık",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "30"
+      },
+      {
+        "name": "Negatif çift",
+        "inputs": "-2 3 -4 5 0 7 1 9 11 13",
+        "expected": "-6"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "titleTr": "10 sayının 3., 5. ve 7. sayılarının toplamı",
+    "titleEn": "Sum of 3rd, 5th and 7th of 10",
+    "textTr": "Girilen 10 sayının 3., 5. ve 7. sayılarının toplamını bulun.",
+    "textEn": "Find the sum of the 3rd, 5th and 7th of 10 entered numbers.",
+    "solution": "1- Başla\n2- say = 0, T = 0\n3- Sayı Gir (A)\n4- say++\n5- if (say == 3 or say == 5 or say == 7) Then T = T + A\n6- if (say < 10) Then goto 3\n7- Print (T)\n8- Dur.",
+    "tests": [
+      {
+        "name": "1–10",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "15"
+      },
+      {
+        "name": "Negatifler",
+        "inputs": "-1 -2 -3 -4 -5 -6 -7 -8 -9 -10",
+        "expected": "-15"
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "titleTr": "10 sayının 3., 5., 7. sayısının en küçüğü",
+    "titleEn": "Minimum of 3rd, 5th, 7th of 10",
+    "textTr": "Girilen 10 sayının 3., 5. ve 7. sayılarının en küçüğünü bulun.",
+    "textEn": "Find the minimum of the 3rd, 5th and 7th of 10 entered numbers.",
+    "solution": "1- Başla\n2- say = 0, A3 = 0, A5 = 0, A7 = 0\n3- Sayı Gir (A)\n4- say++\n5- if (say == 3) Then A3 = A\n6- if (say == 5) Then A5 = A\n7- if (say == 7) Then A7 = A\n8- if (say < 10) Then goto 3\n9- EK = A3\n10- if (A5 < EK) Then EK = A5\n11- if (A7 < EK) Then EK = A7\n12- Print (EK)\n13- Dur.",
+    "tests": [
+      {
+        "name": "1–10",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "3"
+      },
+      {
+        "name": "Karışık",
+        "inputs": "9 8 7 6 5 4 3 2 1 0",
+        "expected": "3"
+      },
+      {
+        "name": "Negatif",
+        "inputs": "0 0 -4 0 2 0 -1 0 0 0",
+        "expected": "-4"
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "titleTr": "Toplam 1000 olana kadar kaç sayı",
+    "titleEn": "Count until total reaches 1000",
+    "textTr": "Toplam 1000 veya daha büyük olana kadar kaç sayı girildiğini bulun.",
+    "textEn": "Count how many numbers are entered until the total reaches 1000 or more.",
+    "solution": "1- Başla\n2- say = 0, T = 0\n3- Sayı Gir (A)\n4- say++\n5- T = T + A\n6- if (T < 1000) Then goto 3\n7- Print (say)\n8- Dur.",
+    "tests": [
+      {
+        "name": "İki sayı",
+        "inputs": "400 600",
+        "expected": "2"
+      },
+      {
+        "name": "Dört sayı",
+        "inputs": "100 200 300 400",
+        "expected": "4"
+      },
+      {
+        "name": "Tek sayı",
+        "inputs": "1000",
+        "expected": "1"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "titleTr": "Toplam 1000 olana kadar en büyük sayı",
+    "titleEn": "Largest until total reaches 1000",
+    "textTr": "Toplam 1000 veya daha büyük olana kadar girilen sayıların en büyüğünü bulun.",
+    "textEn": "Find the largest entered number until the total reaches 1000 or more.",
+    "solution": "1- Başla\n2- say = 0, T = 0, EB = -999999\n3- Sayı Gir (A)\n4- say++\n5- T = T + A\n6- if (A > EB) Then EB = A\n7- if (T < 1000) Then goto 3\n8- Print (EB)\n9- Dur.",
+    "tests": [
+      {
+        "name": "Karışık",
+        "inputs": "400 200 500",
+        "expected": "500"
+      },
+      {
+        "name": "İki sayı",
+        "inputs": "100 900",
+        "expected": "900"
+      },
+      {
+        "name": "Negatif ve büyük",
+        "inputs": "-50 1050",
+        "expected": "1050"
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "titleTr": "3 sıfır girilene kadar en küçük",
+    "titleEn": "Minimum until three zeros",
+    "textTr": "3 adet 0 girilene kadar girilen sayıların en küçüğünü bulun (0’lar da girilen sayıdır).",
+    "textEn": "Find the minimum of entered numbers until three 0s are entered (0s count as entered values).",
+    "solution": "1- Başla\n2- sifir = 0, EK = 999999\n3- Sayı Gir (A)\n4- if (A == 0) Then sifir++\n5- if (A < EK) Then EK = A\n6- if (sifir < 3) Then goto 3\n7- Print (EK)\n8- Dur.",
+    "tests": [
+      {
+        "name": "Negatif var",
+        "inputs": "5 -2 0 0 0",
+        "expected": "-2"
+      },
+      {
+        "name": "İki negatif",
+        "inputs": "-1 -2 0 0 0",
+        "expected": "-2"
+      },
+      {
+        "name": "Üçüncü negatif",
+        "inputs": "10 4 -7 0 0 0",
+        "expected": "-7"
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "titleTr": "Sayı tahmin oyunu",
+    "titleEn": "Number guessing game",
+    "textTr": "İlk girilen sayı hedeftir. Sonraki tahminler için \"Daha büyük sayı gir\" / \"Daha küçük sayı gir\" yazdırın; hedef bulununca kaç denemede bulunduğunu yazdırın.",
+    "textEn": "The first input is the target. For later guesses print \"Daha büyük sayı gir\" / \"Daha küçük sayı gir\"; when found, print the number of attempts.",
+    "solution": "1- Başla\n2- Hedef Sayıyı Gir (H)\n3- deneme = 0\n4- Tahmin Et (T)\n5- deneme++\n6- if (T > H) Then Print (\"Daha küçük sayı gir\")\n7- if (T < H) Then Print (\"Daha büyük sayı gir\")\n8- if (T != H) Then goto 4\n9- Print (\"Tebrikler\", deneme, \"denemede buldun\")\n10- Dur.",
+    "tests": [
+      {
+        "name": "Üç deneme",
+        "inputs": "42 10 50 42",
+        "expected": "Daha büyük sayı gir\nDaha küçük sayı gir\nTebrikler 3 denemede buldun"
+      },
+      {
+        "name": "İlk denemede",
+        "inputs": "7 7",
+        "expected": "Tebrikler 1 denemede buldun"
+      },
+      {
+        "name": "Yukarıdan",
+        "inputs": "10 25 15 10",
+        "expected": "Daha küçük sayı gir\nDaha küçük sayı gir\nTebrikler 3 denemede buldun"
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "titleTr": "3 sıfır veya 2 negatif girilene kadar 2. en büyük",
+    "titleEn": "Second largest until 3 zeros or 2 negatives",
+    "textTr": "3 sıfır veya 2 negatif sayı girilene kadar girilen sayıların 2. en büyüğünü bulun.",
+    "textEn": "Find the second largest of entered numbers until 3 zeros or 2 negatives are entered.",
+    "solution": "1- Başla\n2- ssay = 0, nsay = 0, EB = -999999, EB2 = -999999\n3- Sayı Gir (A)\n4- if (A == 0) Then ssay++\n5- if (A < 0) Then nsay++\n6- if (A > EB) Then EB2 = EB, EB = A\n7- else if (A > EB2 and A < EB) Then EB2 = A\n8- if (ssay < 3 and nsay < 2) Then goto 3\n9- Print (EB2)\n10- Dur.",
+    "tests": [
+      {
+        "name": "Üç sıfır",
+        "inputs": "5 9 3 0 0 0",
+        "expected": "5"
+      },
+      {
+        "name": "İki negatif",
+        "inputs": "5 9 -1 -2",
+        "expected": "5"
+      },
+      {
+        "name": "Karışık",
+        "inputs": "10 2 7 0 0 0",
+        "expected": "7"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "titleTr": "Dizi: 10 sayının toplamı",
+    "titleEn": "Array: sum of 10 numbers",
+    "textTr": "Dizi kullanarak girilen 10 sayının toplamını bulun.",
+    "textEn": "Using an array, find the sum of 10 entered numbers.",
+    "solution": "1- Başla\n2- say = 0, T = 0\n3- Sayı Gir (A[say])\n4- say++\n5- if (say < 10) Then goto 3\n6- say = 0\n7- T = T + A[say]\n8- say++\n9- if (say < 10) Then goto 7\n10- Print (T)\n11- Dur.",
+    "tests": [
+      {
+        "name": "1–10",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "55"
+      },
+      {
+        "name": "Negatifler",
+        "inputs": "-5 10 -2 3 0 1 -1 8 -4 2",
+        "expected": "12"
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "titleTr": "Dizi: 3., 5., 8. elemanın toplamı",
+    "titleEn": "Array: sum of 3rd, 5th, 8th elements",
+    "textTr": "Bir diziye girilen 10 sayının 3., 5. ve 8. elemanlarının toplamını bulun (A[2], A[4], A[7]).",
+    "textEn": "Find the sum of the 3rd, 5th and 8th elements of a 10-element array (A[2], A[4], A[7]).",
+    "solution": "1- Başla\n2- say = 0\n3- Sayı Gir (A[say])\n4- say++\n5- if (say < 10) Then goto 3\n6- Print (A[2] + A[4] + A[7])\n7- Dur.",
+    "tests": [
+      {
+        "name": "1–10",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "16"
+      },
+      {
+        "name": "Negatifler",
+        "inputs": "-1 -2 -3 -4 -5 -6 -7 -8 -9 -10",
+        "expected": "-16"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "titleTr": "Dizi: en büyük sayı",
+    "titleEn": "Array: largest number",
+    "textTr": "Diziye girilen 10 sayının en büyüğünü bulun. Tek döngülü ve iki döngülü yöntemi düşünün.",
+    "textEn": "Find the largest of 10 numbers in an array. Consider single-loop and double-loop methods.",
+    "solution": "1- Başla\n2- say = 0\n3- Sayı Gir (A[say])\n4- say++\n5- if (say < 10) Then goto 3\n6- EB = A[0], say = 1\n7- if (A[say] > EB) Then EB = A[say]\n8- say++\n9- if (say < 10) Then goto 7\n10- Print (EB)\n11- Dur.",
+    "tests": [
+      {
+        "name": "Karışık",
+        "inputs": "5 9 2 1 3 4 6 7 8 0",
+        "expected": "9"
+      },
+      {
+        "name": "Negatifler",
+        "inputs": "-5 -9 -2 -1 -3 -4 -6 -7 -8 -10",
+        "expected": "-1"
+      },
+      {
+        "name": "Hepsi eşit",
+        "inputs": "4 4 4 4 4 4 4 4 4 4",
+        "expected": "4"
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "titleTr": "Dizi: en büyüğün indisi",
+    "titleEn": "Array: index of the largest",
+    "textTr": "Diziye girilen 10 sayının en büyük olanının kaçıncı eleman olduğunu (indis) bulun.",
+    "textEn": "Find the index of the largest of 10 numbers in an array.",
+    "solution": "1- Başla\n2- say = 0\n3- Sayı Gir (A[say])\n4- say++\n5- if (say < 10) Then goto 3\n6- EB = A[0], ebsay = 0, say = 1\n7- if (A[say] > EB) Then EB = A[say], ebsay = say\n8- say++\n9- if (say < 10) Then goto 7\n10- Print (ebsay)\n11- Dur.",
+    "tests": [
+      {
+        "name": "İkinci eleman",
+        "inputs": "5 9 2 1 3 4 6 7 8 0",
+        "expected": "1"
+      },
+      {
+        "name": "Son eleman",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "9"
+      },
+      {
+        "name": "İlk eleman",
+        "inputs": "10 9 8 7 6 5 4 3 2 1",
+        "expected": "0"
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "titleTr": "Dizi: en büyük ile son elemanın yer değiştirmesi",
+    "titleEn": "Array: swap largest with last element",
+    "textTr": "Diziye girilen 10 sayının en büyüğü ile son elemanın yerini değiştirip diziyi yazdırın.",
+    "textEn": "Swap the largest of 10 array elements with the last element and print the array.",
+    "solution": "1- Başla\n2- say = 0\n3- Sayı Gir (A[say])\n4- say++\n5- if (say < 10) Then goto 3\n6- EB = A[0], ebsay = 0, say = 1\n7- if (A[say] > EB) Then EB = A[say], ebsay = say\n8- say++\n9- if (say < 10) Then goto 7\n10- T = A[ebsay], A[ebsay] = A[9], A[9] = T\n11- Print (A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7], A[8], A[9])\n12- Dur.",
+    "tests": [
+      {
+        "name": "En büyük ikinci",
+        "inputs": "5 9 2 1 3 4 6 7 8 0",
+        "expected": "5 0 2 1 3 4 6 7 8 9"
+      },
+      {
+        "name": "En büyük sonda",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "1 2 3 4 5 6 7 8 9 10"
+      },
+      {
+        "name": "İlk eleman",
+        "inputs": "10 9 8 7 6 5 4 3 2 1",
+        "expected": "1 9 8 7 6 5 4 3 2 10"
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "titleTr": "Dizi: ikinci en büyüğün indisi",
+    "titleEn": "Array: index of second largest",
+    "textTr": "Diziye girilen 10 sayının ikinci en büyük olanının kaçıncı eleman olduğunu (indis) bulun.",
+    "textEn": "Find the index of the second largest of 10 numbers in an array.",
+    "solution": "1- Başla\n2- say = 0\n3- Sayı Gir (A[say])\n4- say++\n5- if (say < 10) Then goto 3\n6- EB = A[0], ebsay = 0, EB2 = -999999, EB2say = 0, say = 1\n7- if (A[say] > EB) Then EB2 = EB, EB2say = ebsay, EB = A[say], ebsay = say\n8- else if (A[say] > EB2 and A[say] < EB) Then EB2 = A[say], EB2say = say\n9- say++\n10- if (say < 10) Then goto 7\n11- Print (EB2say)\n12- Dur.",
+    "tests": [
+      {
+        "name": "İkinci eleman",
+        "inputs": "3 8 1 5 7 2 9 4 6 0",
+        "expected": "1"
+      },
+      {
+        "name": "Dördüncü eleman",
+        "inputs": "10 30 20 25 5 15 1 2 3 4",
+        "expected": "3"
+      },
+      {
+        "name": "Son eleman",
+        "inputs": "10 1 2 3 4 5 6 7 8 9",
+        "expected": "9"
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "titleTr": "Dizi: en büyük ile en küçüğün yer değiştirmesi",
+    "titleEn": "Array: swap largest and smallest",
+    "textTr": "Diziye girilen 10 sayının en büyüğü ile en küçüğünün yerini değiştirip diziyi yazdırın.",
+    "textEn": "Swap the largest and smallest of 10 array elements and print the array.",
+    "solution": "1- Başla\n2- say = 0\n3- Sayı Gir (A[say])\n4- say++\n5- if (say < 10) Then goto 3\n6- EB = A[0], EK = A[0], EBY = 0, EKY = 0, say = 1\n7- if (A[say] > EB) Then EB = A[say], EBY = say\n8- if (A[say] < EK) Then EK = A[say], EKY = say\n9- say++\n10- if (say < 10) Then goto 7\n11- T = A[EBY], A[EBY] = A[EKY], A[EKY] = T\n12- Print (A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7], A[8], A[9])\n13- Dur.",
+    "tests": [
+      {
+        "name": "1–10",
+        "inputs": "1 2 3 4 5 6 7 8 9 10",
+        "expected": "10 2 3 4 5 6 7 8 9 1"
+      },
+      {
+        "name": "Karışık",
+        "inputs": "5 -3 8 0 2 9 1 4 7 6",
+        "expected": "5 9 8 0 2 -3 1 4 7 6"
+      },
+      {
+        "name": "Ters sıralı",
+        "inputs": "10 9 8 7 6 5 4 3 2 1",
+        "expected": "1 9 8 7 6 5 4 3 2 10"
+      }
+    ]
+  }
+]
