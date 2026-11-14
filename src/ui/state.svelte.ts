@@ -5,7 +5,7 @@
 import { loadSettings, type Settings } from '../lib/settings';
 import { loadDraft, loadUserProblems } from '../lib/storage';
 import type { AlgoIssue } from '../lib/lang/messages';
-import type { CompareOutcome } from '../lib/interp/protocol';
+import type { CompareOutcome, SelfTestOutcome } from '../lib/interp/protocol';
 import type { MemorySnapshot, RunStatus } from '../lib/interp/types';
 import { newScenarioId, type TestScenario } from '../lib/tests/types';
 import type { Problem } from '../lib/problems';
@@ -44,6 +44,11 @@ export interface CompareState {
   running: boolean;
   trialsRun: number;
   outcome: CompareOutcome | null;
+}
+
+export interface SelfTestState {
+  running: boolean;
+  outcome: SelfTestOutcome | null;
 }
 
 const SAMPLE = [
@@ -90,6 +95,7 @@ class AppState {
   gotoLine = $state(1);
 
   testsState = $state<TestState>({ running: false, done: false, total: 0, results: [] });
+  selfTestState = $state<SelfTestState>({ running: false, outcome: null });
   compareState = $state<CompareState>({ running: false, trialsRun: 0, outcome: null });
   referenceSource = $state('');
 
@@ -121,6 +127,7 @@ class AppState {
 
   resetTests(): void {
     this.testsState = { running: false, done: false, total: 0, results: [] };
+    this.selfTestState = { running: false, outcome: null };
     this.compareState = { running: false, trialsRun: 0, outcome: null };
   }
 

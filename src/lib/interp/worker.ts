@@ -12,6 +12,7 @@ import { execute } from './vm';
 import type { RunResult, VMResume, VMEvent } from './types';
 import type { FromWorker, ToWorker } from './protocol';
 import { compareAlgorithms } from '../tests/random';
+import { fuzzAlgorithm } from '../tests/selftest';
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -96,6 +97,39 @@ ctx.onmessage = (ev: MessageEvent<ToWorker>) => {
         msg.sourceA, msg.sourceB, msg.trials, msg.seed, msg.maxSteps, msg.maxOutput,
       );
       post({ kind: 'compareDone', outcome: summary.outcome, trialsRun: summary.trialsRun });
+      return;
+    }
+    if (msg.cmd === 'selfTest') {
+      if (msg.referenceSource && msg.referenceSource.trim()) {
+        const summary = compareAlgorithms(
+          msg.source, msg.referenceSource, msg.trials, msg.seed, msg.maxSteps, msg.maxOutput,
+        );
+        if (summary.outcome.kind === 'invalid') {
+          post({
+            kind: 'selfTestDone',
+            outcome: {
+              kind: 'invalid',
+              issues: summary.outcome.issues,
+              which: summary.outcome.which === 'a' ? 'source' : 'reference',
+            },
+          });
+        } else {
+          post({
+            kind: 'selfTestDone',
+            outcome: { kind: 'compare', outcome: summary.outcome, trialsRun: summary.trialsRun },
+          });
+        }
+        return;
+      }
+      const outcome = fuzzAlgorithm(
+        msg.source, msg.trials, msg.seed, msg.maxSteps, msg.maxOutput,
+      );
+      post({
+        kind: 'selfTestDone',
+        outcome: outcome.kind === 'invalid'
+          ? { kind: 'invalid', issues: outcome.issues, which: 'source' }
+          : outcome,
+      });
     }
   } catch (e) {
     post({ kind: 'fatal', message: e instanceof Error ? e.message : String(e) });

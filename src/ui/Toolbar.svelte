@@ -2,7 +2,7 @@
   import { app } from './state.svelte.js';
   import { t } from './i18n';
   import {
-    continueRun, newAlgorithm, openAlgorithm, persistSettings, runTests,
+    continueRun, newAlgorithm, openAlgorithm, persistSettings, testOrSelfTest,
     saveAlgorithm, startRun, stepRun, stopRun,
   } from './actions';
 
@@ -27,7 +27,7 @@
 
   function doTest(): void {
     fileOpen = false;
-    runTests();
+    testOrSelfTest();
   }
 
   function setLang(e: Event): void {
@@ -96,7 +96,7 @@
     class="btn"
     type="button"
     onclick={stopRun}
-    disabled={!app.active}
+    disabled={!app.active && !app.selfTestState.running}
   >{t(app.lang, 'stop')}</button>
 
   <span class="spacer"></span>

@@ -5,7 +5,7 @@
 
 import { app } from './state.svelte.js';
 import { t } from './i18n';
-import { RunSession, TestBatchSession, CompareSession } from '../lib/interp/workerClient';
+import { RunSession, TestBatchSession, CompareSession, SelfTestSession } from '../lib/interp/workerClient';
 import type { RunResult, VMEvent } from '../lib/interp/types';
 import { formatIssue, issueLine } from '../lib/lang/messages';
 import { prepare } from '../lib/interp/run';
@@ -21,7 +21,15 @@ import type { TestScenario } from '../lib/tests/types';
 let runSession: RunSession | null = null;
 let testSession: TestBatchSession | null = null;
 let compareSession: CompareSession | null = null;
+let selfTestSession: SelfTestSession | null = null;
 let seenWarnings = new Set<string>();
+
+function stopSelfTest(): void {
+  if (!selfTestSession) return;
+  selfTestSession.cancel();
+  selfTestSession = null;
+  app.selfTestState = { running: false, outcome: null };
+}
 
 function pushWarning(code: string, line: number): boolean {
   const key = `${code}:${line}`;
@@ -74,6 +82,7 @@ export function startRun(stepMode: boolean): void {
     compareSession = null;
     app.compareState = { running: false, trialsRun: 0, outcome: null };
   }
+  stopSelfTest();
   runSession = null;
   seenWarnings = new Set();
   app.clearRunView();
@@ -152,6 +161,11 @@ export function continueRun(): void {
 
 export function stopRun(): void {
   if (!runSession) {
+    if (selfTestSession) {
+      stopSelfTest();
+      app.notice = { text: t(app.lang, 'stoppedByUser'), kind: 'info' };
+      return;
+    }
     if (app.phase === 'paused' || app.phase === 'running') app.phase = 'stopped';
     return;
   }
@@ -182,6 +196,7 @@ export function toggleBreakpoint(line: number): void {
 }
 
 export function runTests(): void {
+  stopSelfTest();
   if (app.tests.length === 0) {
     app.notice = { text: t(app.lang, 'noTests'), kind: 'info' };
     app.tab = 'tests';
@@ -252,6 +267,75 @@ export function runTests(): void {
   });
 }
 
+export function selfTest(): void {
+  runSession?.stop();
+  runSession = null;
+  if (app.active) app.phase = 'ready';
+  app.waitingInput = false;
+  app.inputTarget = '';
+  app.currentLine = null;
+  testSession?.dispose();
+  testSession = null;
+  if (compareSession) {
+    compareSession.cancel();
+    compareSession = null;
+    app.compareState = { running: false, trialsRun: 0, outcome: null };
+  }
+  stopSelfTest();
+
+  const prep = prepare(app.source);
+  const first = prep.errors[0] ?? null;
+  if (!prep.ok) {
+    app.tab = 'console';
+    app.clearRunView();
+    app.phase = 'error';
+    app.error = first;
+    app.currentLine = first?.line ?? null;
+    if (first) {
+      const hint = formatIssue(first, app.lang).hint;
+      app.consoleLines = [{ kind: 'err', text: issueLine(first, app.lang) }];
+      if (hint) {
+        app.consoleLines = [...app.consoleLines, { kind: 'info', text: `${t(app.lang, 'hint')}: ${hint}` }];
+      }
+    }
+    return;
+  }
+
+  const problem = app.problemId === null
+    ? null
+    : (getProblem(app.problemId) ?? app.userProblems.find((x) => x.id === app.problemId) ?? null);
+  const reference = problem?.solution?.trim() || app.referenceSource.trim() || null;
+
+  app.tab = 'tests';
+  app.selfTestState = { running: true, outcome: null };
+  selfTestSession = new SelfTestSession({
+    source: app.source,
+    referenceSource: reference,
+    trials: app.settings.compareTrials,
+    seed: (Date.now() >>> 0) || 1,
+    maxSteps: app.settings.maxSteps,
+    maxOutput: app.settings.maxOutput,
+  }, {
+    onDone: (outcome) => {
+      app.selfTestState = { running: false, outcome };
+      selfTestSession = null;
+    },
+    onFatal: () => {
+      app.selfTestState = { running: false, outcome: null };
+      app.notice = { text: t(app.lang, 'selfTestFailed'), kind: 'err' };
+      selfTestSession = null;
+    },
+  });
+}
+
+/**
+ * Test düğmesi/kısayolu: senaryo varsa onları, yoksa kendi kendini testi çalıştırır.
+ */
+export function testOrSelfTest(): void {
+  if (app.tests.length > 0) runTests();
+  else selfTest();
+}
+
 export function compareReference(trials: number): void {
   if (!app.referenceSource.trim()) {
     app.notice = { text: t(app.lang, 'referenceHint'), kind: 'info' };
@@ -290,6 +374,7 @@ export function applySettings(next: Settings): void {
 export function newAlgorithm(): void {
   runSession?.stop();
   runSession = null;
+  stopSelfTest();
   app.source = '1- Başla\n2- \n3- Dur.';
   app.tests = [];
   app.problemId = null;
@@ -339,6 +424,7 @@ export async function openAlgorithm(): Promise<void> {
     if (!opened) return;
     runSession?.stop();
     runSession = null;
+    stopSelfTest();
     app.source = opened.content;
     app.fileName = baseName(opened.path);
     app.path = isTauri() ? opened.path : null;
@@ -383,6 +469,7 @@ export function loadProblem(id: number): void {
   if (!p) return;
   runSession?.stop();
   runSession = null;
+  stopSelfTest();
   app.source = skeletonFor(p);
   app.replaceTests(p.tests);
   app.problemId = p.id;

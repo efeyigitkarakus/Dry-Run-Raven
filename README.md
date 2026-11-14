@@ -26,6 +26,7 @@ hand-written implementation of the same idea.
 - Runs the algorithm inside a Web Worker; **Stop** terminates it immediately.
 - Supports step-by-step execution (`F10`), highlighting the current line and memory state.
 - Defines test scenarios, runs them all, and reports an `x/y passed` summary.
+- Self-tests with generated inputs, without writing test cases.
 - Optionally compares against a reference algorithm using random inputs.
 - Generates a flow chart from the same algorithm; exports it as SVG or PNG.
 - Ships with a bank of 27 questions: TR/EN problem text, tests, and a hidden reference solution.
@@ -59,7 +60,22 @@ external fonts, or CDN resources.
 - Expected/actual output comparison with the first difference shown.
 - Case-insensitive and whitespace-insensitive comparison.
 - `1e-9` tolerance for numbers.
-- Reference algorithm comparison with 10–50 random trials.
+- Self-test with generated inputs: finds crashes, infinite loops, array bounds and similar runtime errors.
+- Reference algorithm comparison with 10–50 random trials (optional; not needed for normal tests).
+
+Normal testing needs only an input and the expected output. The reference
+comparison is a collapsed “advanced” section for randomised cross-checking.
+
+### Self-test
+
+**Self-test** in the Tests tab (and the toolbar **Test** button when there are no
+scenarios) runs the algorithm on generated inputs. It reports runtime errors
+with the offending input values and line. When a question from the bank is
+loaded, the algorithm is compared against that question's stored solution, so no
+reference solution has to be supplied.
+
+For an arbitrary algorithm without a stored solution, the self-test cannot judge
+whether the output is logically correct; it only checks that the algorithm runs.
 
 ### Memory
 
@@ -227,11 +243,12 @@ Vitest coverage:
 - Dangling else, nested if, and `else if` chains
 - Comma-separated statements, array bounds, uninitialised variables
 - Infinite loop / step limit and output limit
+- Self-test failure detection (infinite loop, array bounds)
 - All 27 questions passing their own tests
 - CFG/flow chart layout and multi-loop edges
 - App shell and tab wiring
 
-Current status: **43 tests passing**.
+Current status: **47 tests passing**.
 
 ## Architecture
 
@@ -241,7 +258,7 @@ src/lib/lang       AST → flat instructions (compiler)
 src/lib/interp     generator VM, Web Worker, protocol, worker client
 src/lib/cfg        control flow graph and merge nodes from instructions
 src/lib/flow       layered layout, pure SVG rendering, PNG export
-src/lib/tests      output comparison and random reference comparison
+src/lib/tests      output comparison, random reference comparison and self-test
 src/lib/problems   27-question bank + loader
 src/ui             Svelte 5 components and application state
 src-tauri          Rust shell: file dialogs, writing, CSP
@@ -274,11 +291,11 @@ aliases can also be defined as a comma-separated list under
 Production measurements:
 
 ```text
-index JS       169.75 kB raw   / 56.41 kB gzip
-worker JS       30.30 kB raw   /  9.39 kB gzip
-CSS             20.98 kB raw   /  4.66 kB gzip
+index JS       177.20 kB raw   / 58.42 kB gzip
+worker JS       31.40 kB raw   /  9.69 kB gzip
+CSS             21.96 kB raw   /  4.80 kB gzip
 .deb             1.56 MiB
-AppImage       107.98 MiB      (includes WebKitGTK libraries)
+AppImage       107.99 MiB      (includes WebKitGTK libraries)
 ```
 
 Idle measurement over 20 seconds in a Wayland session:

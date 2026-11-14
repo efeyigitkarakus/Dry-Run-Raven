@@ -3,7 +3,7 @@
  * sonlandırır. Böylece sonsuz döngü arayüzü kilitleyemez.
  */
 
-import type { CompareMsg, FromWorker, TestCaseMsg, ToWorker } from './protocol';
+import type { CompareMsg, FromWorker, SelfTestMsg, SelfTestOutcome, TestCaseMsg, ToWorker } from './protocol';
 import type { RunResult, VMResume, VMEvent } from './types';
 
 function spawn(): Worker {
@@ -153,4 +153,40 @@ export class CompareSession {
   }
 
   dispose(): void { this.cancel(); }
+}
+
+export interface SelfTestHandlers {
+  onDone: (outcome: SelfTestOutcome) => void;
+  onFatal: (message: string) => void;
+}
+
+export class SelfTestSession {
+  private worker: Worker | null;
+  private ended = false;
+
+  constructor(msg: Omit<SelfTestMsg, 'cmd'>, private handlers: SelfTestHandlers) {
+    this.worker = spawn();
+    this.worker.onmessage = (ev: MessageEvent<FromWorker>) => {
+      const m = ev.data;
+      if (m.kind === 'selfTestDone') {
+        this.handlers.onDone(m.outcome);
+        this.cancel();
+      } else if (m.kind === 'fatal') {
+        this.handlers.onFatal(m.message);
+        this.cancel();
+      }
+    };
+    this.worker.onerror = (ev) => {
+      this.handlers.onFatal(ev.message || 'worker');
+      this.cancel();
+    };
+    this.worker.postMessage({ cmd: 'selfTest', ...msg } satisfies ToWorker);
+  }
+
+  cancel(): void {
+    if (this.ended) return;
+    this.ended = true;
+    this.worker?.terminate();
+    this.worker = null;
+  }
 }

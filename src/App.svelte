@@ -3,7 +3,7 @@
   import { app, type Tab } from './ui/state.svelte.js';
   import { t } from './ui/i18n';
   import {
-    continueRun, newAlgorithm, openAlgorithm, runTests, saveAlgorithm,
+    continueRun, newAlgorithm, openAlgorithm, testOrSelfTest, saveAlgorithm,
     startRun, stepRun, stopRun, toggleBreakpoint,
   } from './ui/actions';
   import { saveDraft } from './lib/storage';
@@ -86,7 +86,7 @@
       toggleBreakpoint(app.cursorLine);
       return;
     }
-    if (key === 'F6') { e.preventDefault(); runTests(); return; }
+    if (key === 'F6') { e.preventDefault(); testOrSelfTest(); return; }
 
     if (mod && key === 'Enter') { e.preventDefault(); startRun(false); return; }
     if (mod && (key === 's' || key === 'S')) {
@@ -106,7 +106,7 @@
       app.tab = 'flow';
       return;
     }
-    if (mod && (key === 't' || key === 'T')) { e.preventDefault(); runTests(); return; }
+    if (mod && (key === 't' || key === 'T')) { e.preventDefault(); testOrSelfTest(); return; }
     if (mod && key === ',') { e.preventDefault(); app.settingsOpen = true; return; }
     if (mod && (key === 'g' || key === 'G')) {
       e.preventDefault();
