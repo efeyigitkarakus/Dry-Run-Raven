@@ -95,3 +95,72 @@ describe('worker: ek giriş takma adları', () => {
     expect(doneResult(out).status).toBe('error');
   });
 });
+
+describe('worker: konsol çıktısı toplu gönderilir', () => {
+  const LOOP = (n: number) => `1- Başla
+2- i = 0
+3- i++
+4- Print (i)
+5- if (i < ${n}) Then goto 3
+6- Dur.`;
+
+  function hostWithClock(clock: () => number) {
+    clearKeywordAliases();
+    const out: FromWorker[] = [];
+    return { out, handle: createWorkerHost((m) => { out.push(m); }, clock) };
+  }
+
+  const printed = (out: FromWorker[]): string[] =>
+    out.flatMap((m) => (m.kind === 'prints' ? m.texts : []));
+
+  it('2000 satır, satır başına değil birkaç mesajla gider', () => {
+    const { out, handle } = hostWithClock(() => 0);
+    handle(startMsg(LOOP(2000), { maxSteps: 100_000, maxOutput: 10_000 }));
+    const batches = out.filter((m) => m.kind === 'prints');
+    expect(batches.length).toBeGreaterThan(0);
+    expect(batches.length).toBeLessThanOrEqual(6);
+    expect(out.some((m) => m.kind === 'event' && m.event.type === 'print')).toBe(false);
+  });
+
+  it('hiçbir satır kaybolmaz ve sıra korunur', () => {
+    const { out, handle } = hostWithClock(() => 0);
+    handle(startMsg(LOOP(2000), { maxSteps: 100_000, maxOutput: 10_000 }));
+    expect(printed(out)).toEqual(Array.from({ length: 2000 }, (_, i) => String(i + 1)));
+    expect(out[out.length - 1].kind).toBe('done');
+  });
+
+  it('süre dolmuşsa satır bekletilmeden gönderilir', () => {
+    let t = 0;
+    const { out, handle } = hostWithClock(() => (t += 100));
+    handle(startMsg(LOOP(3)));
+    expect(out.filter((m) => m.kind === 'prints')).toHaveLength(3);
+    expect(printed(out)).toEqual(['1', '2', '3']);
+  });
+
+  it('adım modunda çıktı, sonraki duraklamadan önce ulaşır', () => {
+    const { out, handle } = hostWithClock(() => 0);
+    handle(startMsg(`1- Başla
+2- Print ("a")
+3- Print ("b")
+4- Dur.`, { stepMode: true }));
+    for (let i = 0; i < 10 && out[out.length - 1].kind !== 'done'; i++) {
+      handle({ cmd: 'resume', resume: { cmd: 'step', breakpoints: [] } });
+    }
+    const kinds = out.map((m) => (m.kind === 'event' ? m.event.type : m.kind));
+    const lastPrint = kinds.lastIndexOf('prints');
+    expect(printed(out)).toEqual(['a', 'b']);
+    expect(kinds[kinds.length - 1]).toBe('done');
+    // "b" yazdırıldıktan sonra en az bir olay (duraklama veya bitiş) gelir; çıktı ondan önce gönderilmiştir.
+    expect(lastPrint).toBeLessThan(kinds.length - 1);
+    // her çıktı partisinden hemen sonra gelen mesaj bir duraklama ya da bitiştir
+    kinds.forEach((k, i) => { if (k === 'prints') expect(['pause', 'done', 'prints']).toContain(kinds[i + 1]); });
+  });
+
+  it('çıktı limiti hatasında o ana kadarki satırlar yine gönderilir', () => {
+    const { out, handle } = hostWithClock(() => 0);
+    handle(startMsg(LOOP(2000), { maxSteps: 100_000, maxOutput: 10 }));
+    const r = doneResult(out);
+    expect(r.error?.code).toBe('E_OUTPUT_LIMIT');
+    expect(printed(out)).toEqual(r.output);
+  });
+});

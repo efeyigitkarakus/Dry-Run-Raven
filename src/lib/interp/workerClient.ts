@@ -12,6 +12,8 @@ function spawn(): Worker {
 
 export interface RunHandlers {
   onEvent: (event: VMEvent) => void;
+  /** Toplu gelen Print çıktıları (sıralı). */
+  onPrints: (texts: string[]) => void;
   onDone: (result: RunResult) => void;
   onFatal: (message: string) => void;
 }
@@ -46,6 +48,7 @@ export class RunSession {
 
   private receive(msg: FromWorker): void {
     if (this.ended) return;
+    if (msg.kind === 'prints') { this.handlers.onPrints(msg.texts); return; }
     if (msg.kind === 'event') {
       this.handlers.onEvent(msg.event);
       if (msg.event.type === 'done') this.finish(msg.event.result);

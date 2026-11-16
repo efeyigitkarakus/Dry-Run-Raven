@@ -72,6 +72,8 @@ export type SelfTestOutcome =
 
 export type FromWorker =
   | { kind: 'event'; event: VMEvent }
+  /** Art arda gelen Print çıktıları; satır başına mesaj yerine parti hâlinde. */
+  | { kind: 'prints'; texts: string[] }
   | { kind: 'done'; result: RunResult }
   | { kind: 'testResult'; index: number; name: string; result: RunResult }
   | { kind: 'testDone'; count: number }

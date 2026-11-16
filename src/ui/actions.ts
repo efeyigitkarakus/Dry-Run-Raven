@@ -3,7 +3,7 @@
  * Worker oturumları burada tutulur; UI yalnızca `app` durumunu okur.
  */
 
-import { app } from './state.svelte.js';
+import { app, type ConsoleLine } from './state.svelte.js';
 import { t } from './i18n';
 import { RunSession, TestBatchSession, CompareSession, SelfTestSession } from '../lib/interp/workerClient';
 import type { RunResult, VMEvent } from '../lib/interp/types';
@@ -37,6 +37,15 @@ function stopSelfTest(): void {
   selfTestSession.cancel();
   selfTestSession = null;
   app.selfTestState = { running: false, outcome: null };
+}
+
+/**
+ * Konsola satır ekler. Diziyi her seferinde kopyalamak yerine yerinde büyütür;
+ * kopyalama, çıktı uzadıkça satır sayısının karesiyle pahalılaşıyordu.
+ */
+function appendConsole(lines: ConsoleLine[]): void {
+  if (lines.length === 0) return;
+  app.consoleLines.push(...lines);
 }
 
 function pushWarning(code: string, line: number): boolean {
@@ -112,7 +121,7 @@ export function startRun(stepMode: boolean): void {
   }, {
     onEvent: (ev: VMEvent) => {
       if (ev.type === 'print') {
-        app.consoleLines = [...app.consoleLines, { kind: 'out', text: ev.text }];
+        appendConsole([{ kind: 'out', text: ev.text }]);
         return;
       }
       if (ev.type === 'pause') {
@@ -141,6 +150,9 @@ export function startRun(stepMode: boolean): void {
           app.consoleLines = [...app.consoleLines, { kind: 'info', text: `${t(app.lang, 'warning')}: ${f.message}` }];
         }
       }
+    },
+    onPrints: (texts) => {
+      appendConsole(texts.map((text) => ({ kind: 'out', text })));
     },
     onDone: (result) => {
       runSession = null;

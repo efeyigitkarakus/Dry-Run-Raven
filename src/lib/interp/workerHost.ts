@@ -15,22 +15,53 @@ import { setInputAliases } from '../lang/keywords';
 
 export type WorkerPost = (msg: FromWorker) => void;
 
+/** Bir çıktı partisindeki en fazla satır. */
+const PRINT_BATCH_MAX = 500;
+/** İki çıktı partisi arasındaki en kısa süre (ms). */
+const PRINT_FLUSH_MS = 30;
+
 /** Tek bir worker'ın durumunu tutan mesaj işleyicisini üretir. */
-export function createWorkerHost(post: WorkerPost): (msg: ToWorker) => void {
+export function createWorkerHost(
+  post: WorkerPost,
+  now: () => number = () => performance.now(),
+): (msg: ToWorker) => void {
   let gen: Generator<VMEvent, RunResult, VMResume> | null = null;
+
+  // Print çıktıları biriktirilip toplu gönderilir. Satır başına bir mesaj,
+  // çok satır yazan programlarda arayüzü mesaj ve yeniden çizim yüküyle boğar.
+  let printBuf: string[] = [];
+  let lastFlush = -Infinity;
+
+  function flushPrints(): void {
+    if (printBuf.length === 0) return;
+    post({ kind: 'prints', texts: printBuf });
+    printBuf = [];
+    lastFlush = now();
+  }
 
   function pump(resume?: VMResume): void {
     if (!gen) return;
     try {
       let r = gen.next(resume as VMResume);
       while (!r.done) {
-        post({ kind: 'event', event: r.value });
-        if (r.value.type === 'pause' || r.value.type === 'input') return;
+        if (r.value.type === 'print') {
+          printBuf.push(r.value.text);
+          // Son gönderimin üzerinden yeterince süre geçtiyse bekletme; seyrek
+          // yazan programlarda her satır eskisi gibi anında görünür.
+          if (printBuf.length >= PRINT_BATCH_MAX || now() - lastFlush >= PRINT_FLUSH_MS) flushPrints();
+        } else {
+          // Sıra korunsun: bekleyen çıktı, diğer olaylardan önce gider.
+          flushPrints();
+          post({ kind: 'event', event: r.value });
+          if (r.value.type === 'pause' || r.value.type === 'input') return;
+        }
         r = gen.next(undefined as unknown as VMResume);
       }
+      flushPrints();
       post({ kind: 'done', result: r.value });
       gen = null;
     } catch (e) {
+      flushPrints();
       post({ kind: 'fatal', message: e instanceof Error ? e.message : String(e) });
       gen = null;
     }
@@ -71,6 +102,8 @@ export function createWorkerHost(post: WorkerPost): (msg: ToWorker) => void {
       }
       if (msg.cmd === 'start') {
         gen = null;
+        printBuf = [];
+        lastFlush = -Infinity;
         startRun(msg);
         return;
       }
