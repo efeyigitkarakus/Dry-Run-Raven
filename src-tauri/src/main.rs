@@ -4,11 +4,14 @@
 //! Mantık TypeScript tarafındadır; Rust yalnızca yerel dosya diyalogları,
 //! dosya yazma ve güvenli CSP'den sorumludur. Telemetri/güncelleyici yok.
 
-use std::fs;
-use std::path::PathBuf;
+mod approved;
 
+use std::fs;
+use std::path::{Path, PathBuf};
+
+use approved::ApprovedPaths;
 use serde::Serialize;
-use tauri::AppHandle;
+use tauri::{AppHandle, State};
 use tauri_plugin_dialog::{DialogExt, FilePath};
 
 #[derive(Serialize)]
@@ -36,8 +39,21 @@ fn sidecar_path(path: &PathBuf) -> PathBuf {
     PathBuf::from(s)
 }
 
+/// Diyalogdan dönen yolu onaylar ve ön yüze gidecek dizgesini üretir.
+///
+/// Onaylanan, ön yüze gönderilen dizgenin karşılığı olan yoldur; böylece
+/// ön yüz aynı dizgeyi geri yolladığında birebir eşleşir.
+fn approve_for_frontend(approved: &ApprovedPaths, path: &Path) -> String {
+    let shown = path.to_string_lossy().to_string();
+    approved.approve(Path::new(&shown));
+    shown
+}
+
 #[tauri::command]
-fn open_alg(app: AppHandle) -> Result<Option<OpenResult>, String> {
+fn open_alg(
+    app: AppHandle,
+    approved: State<'_, ApprovedPaths>,
+) -> Result<Option<OpenResult>, String> {
     let picked = app
         .dialog()
         .file()
@@ -48,7 +64,7 @@ fn open_alg(app: AppHandle) -> Result<Option<OpenResult>, String> {
     let content = fs::read_to_string(&path).map_err(|e| e.to_string())?;
     let sidecar = fs::read_to_string(sidecar_path(&path)).ok();
     Ok(Some(OpenResult {
-        path: path.to_string_lossy().to_string(),
+        path: approve_for_frontend(&approved, &path),
         content,
         sidecar,
     }))
@@ -57,21 +73,34 @@ fn open_alg(app: AppHandle) -> Result<Option<OpenResult>, String> {
 #[tauri::command]
 fn save_alg(
     app: AppHandle,
+    approved: State<'_, ApprovedPaths>,
     path: Option<String>,
     default_name: String,
     content: String,
     sidecar: Option<String>,
 ) -> Result<Option<String>, String> {
-    let target = match path {
-        Some(p) if !p.is_empty() => PathBuf::from(p),
-        _ => {
-            let picked = app
+    // Ön yüzden gelen yola yalnızca bu oturumda bir diyalogdan döndüyse
+    // doğrudan yazılır. Onaylı olmayan her yol (başka bir mutlak yol, `..`
+    // içeren bir yol, önceki oturumdan kalan bir yol) yok sayılır ve
+    // kullanıcıya kaydetme diyaloğu açılır; nereye yazılacağına o karar verir.
+    let target = match approved.resolve(path.as_deref()) {
+        Some(p) => p,
+        None => {
+            let mut dialog = app
                 .dialog()
                 .file()
                 .set_file_name(&default_name)
-                .add_filter("Algoritma", &["alg"])
-                .blocking_save_file();
-            match picked {
+                .add_filter("Algoritma", &["alg"]);
+            // İstenen yol yalnızca diyaloğun başlangıç konumu için ipucudur.
+            if let Some(requested) = path.as_deref().filter(|p| !p.is_empty()).map(Path::new) {
+                if let Some(name) = requested.file_name().and_then(|n| n.to_str()) {
+                    dialog = dialog.set_file_name(name);
+                }
+                if let Some(dir) = requested.parent().filter(|d| d.is_dir()) {
+                    dialog = dialog.set_directory(dir);
+                }
+            }
+            match dialog.blocking_save_file() {
                 Some(f) => ensure_ext(to_path(f)?, "alg"),
                 None => return Ok(None),
             }
@@ -81,7 +110,7 @@ fn save_alg(
     if let Some(s) = sidecar {
         fs::write(sidecar_path(&target), s.as_bytes()).map_err(|e| e.to_string())?;
     }
-    Ok(Some(target.to_string_lossy().to_string()))
+    Ok(Some(approve_for_frontend(&approved, &target)))
 }
 
 #[tauri::command]
@@ -132,6 +161,7 @@ fn save_binary_file(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .manage(ApprovedPaths::default())
         .invoke_handler(tauri::generate_handler![
             open_alg,
             save_alg,
