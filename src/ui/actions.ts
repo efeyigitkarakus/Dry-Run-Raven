@@ -24,6 +24,14 @@ let compareSession: CompareSession | null = null;
 let selfTestSession: SelfTestSession | null = null;
 let seenWarnings = new Set<string>();
 
+/**
+ * Worker'a gönderilecek ek giriş takma adları. Ayarlar reaktif bir proxy
+ * olduğundan postMessage ile kopyalanamaz; düz bir diziye alınır.
+ */
+function inputAliases(): string[] {
+  return [...app.settings.inputAliases];
+}
+
 function stopSelfTest(): void {
   if (!selfTestSession) return;
   selfTestSession.cancel();
@@ -100,6 +108,7 @@ export function startRun(stepMode: boolean): void {
     stepMode,
     allowPrompt: true,
     breakpoints: [...app.breakpoints],
+    inputAliases: inputAliases(),
   }, {
     onEvent: (ev: VMEvent) => {
       if (ev.type === 'print') {
@@ -236,7 +245,7 @@ export function runTests(): void {
     running: true, done: false, total: app.tests.length, results: [],
   };
   const cases = app.tests.map((s) => ({ name: s.name, inputs: splitInputs(s.inputs) }));
-  testSession = new TestBatchSession(app.source, cases, app.settings.maxSteps, app.settings.maxOutput, {
+  testSession = new TestBatchSession(app.source, cases, app.settings.maxSteps, app.settings.maxOutput, inputAliases(), {
     onResult: (_index, _name, result) => {
       const scenario = app.tests[_index];
       if (!scenario) return;
@@ -315,6 +324,7 @@ export function selfTest(): void {
     seed: (Date.now() >>> 0) || 1,
     maxSteps: app.settings.maxSteps,
     maxOutput: app.settings.maxOutput,
+    inputAliases: inputAliases(),
   }, {
     onDone: (outcome) => {
       app.selfTestState = { running: false, outcome };
@@ -350,6 +360,7 @@ export function compareReference(trials: number): void {
     seed: (Date.now() >>> 0) || 1,
     maxSteps: app.settings.maxSteps,
     maxOutput: app.settings.maxOutput,
+    inputAliases: inputAliases(),
   }, {
     onDone: (outcome, trialsRun) => {
       app.compareState = { running: false, trialsRun, outcome };

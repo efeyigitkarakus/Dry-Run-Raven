@@ -24,6 +24,7 @@ export interface StartOptions {
   stepMode: boolean;
   allowPrompt: boolean;
   breakpoints: number[];
+  inputAliases: string[];
 }
 
 /** Tek bir çalıştırma oturumu. */
@@ -86,7 +87,10 @@ export class TestBatchSession {
   private worker: Worker | null;
   private ended = false;
 
-  constructor(source: string, cases: TestCaseMsg[], maxSteps: number, maxOutput: number, private handlers: TestBatchHandlers) {
+  constructor(
+    source: string, cases: TestCaseMsg[], maxSteps: number, maxOutput: number,
+    inputAliases: string[], private handlers: TestBatchHandlers,
+  ) {
     this.worker = spawn();
     this.worker.onmessage = (ev: MessageEvent<FromWorker>) => {
       const msg = ev.data;
@@ -101,7 +105,9 @@ export class TestBatchSession {
       }
     };
     this.worker.onerror = () => { if (!this.ended) this.handlers.onDone(0); this.dispose(); };
-    this.worker.postMessage({ cmd: 'testBatch', source, cases, maxSteps, maxOutput } satisfies ToWorker);
+    this.worker.postMessage({
+      cmd: 'testBatch', source, cases, maxSteps, maxOutput, inputAliases,
+    } satisfies ToWorker);
   }
 
   dispose(): void {
@@ -117,9 +123,10 @@ export function runTestBatch(
   cases: TestCaseMsg[],
   maxSteps: number,
   maxOutput: number,
+  inputAliases: string[],
   handlers: TestBatchHandlers,
 ): TestBatchSession {
-  return new TestBatchSession(source, cases, maxSteps, maxOutput, handlers);
+  return new TestBatchSession(source, cases, maxSteps, maxOutput, inputAliases, handlers);
 }
 
 export interface CompareHandlers {
