@@ -198,6 +198,34 @@ describe('yorumlayıcı', () => {
     expect(run(src).output).toEqual(['3 1 2 15']);
   });
 
+  // Her aritmetik operatör kendi işlemini yapmalı ("*" bir zamanlar "/" olarak derleniyordu).
+  it.each([
+    ['3 * 4', '12'],
+    ['12 / 4', '3'],
+    ['7 % 3', '1'],
+    ['7 mod 3', '1'],
+    ['7 div 2', '3'],
+    ['2 + 3 * 4', '14'],
+    ['(2 + 3) * 4', '20'],
+    ['2 * 3 / 4', '1.5'],
+    ['10 - 2 * 3', '4'],
+  ])('aritmetik: %s = %s', (expr: string, expected: string) => {
+    const r = run(`1- Başla
+2- X = ${expr}
+3- Print (X)
+4- Dur.`);
+    expect(r.status).toBe('ok');
+    expect(r.output).toEqual([expected]);
+  });
+
+  it('çarpma akış şeması metninde de çarpma olarak görünür', () => {
+    const p = prepare(`1- Başla
+2- X = 2 * 3
+3- Dur.`);
+    expect(p.ok).toBe(true);
+    expect(p.compiled!.code.some((ins) => ins.text.includes('2 * 3'))).toBe(true);
+  });
+
   it('atanmamış değişkeni okumak hatadır', () => {
     const r = run(`1- Başla
 2- Y = X + 1
