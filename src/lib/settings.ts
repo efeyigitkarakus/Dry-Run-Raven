@@ -2,7 +2,7 @@
  * Kullanıcı ayarları. localStorage'da tutulur; internet yok.
  */
 
-import { addKeywordAlias, clearKeywordAliases } from './lang/keywords';
+import { setInputAliases } from './lang/keywords';
 
 export interface Settings {
   autoNumber: boolean;
@@ -50,9 +50,5 @@ export function saveSettings(s: Settings): void {
 
 /** Dil katmanına ek giriş adlarını uygular (uygulama açılışında ve ayarda). */
 export function applyInputAliases(aliases: string[]): void {
-  clearKeywordAliases();
-  for (const a of aliases) {
-    const w = a.trim();
-    if (w) addKeywordAlias('giris', w);
-  }
+  setInputAliases(aliases);
 }

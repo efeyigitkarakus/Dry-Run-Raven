@@ -518,8 +518,8 @@ class Parser {
         const op = String(t.value);
         if (op === '*' || op === '/' || op === '%') {
           this.advance();
-          left = { kind: 'bin', op: op === '%' ? 'mod' : '/', left, right: this.parsePow() };
-          if (op === '%') { /* mod olarak temsil edilir */ }
+          // "%" mod olarak temsil edilir; "*" ve "/" kendi işlemleri olarak kalır.
+          left = { kind: 'bin', op: op === '%' ? 'mod' : op, left, right: this.parsePow() };
           continue;
         }
         break;

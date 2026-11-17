@@ -3,6 +3,8 @@ import { parse } from './parser';
 import { compile } from './compiler';
 import { runSync, prepare } from '../interp/run';
 import { compareOutputs } from '../tests/compare';
+import { MAX_ARRAY_SIZE } from '../interp/limits';
+import { formatIssue } from './messages';
 
 function run(src: string, inputs: string[] = [], maxSteps = 200_000) {
   return runSync(src, inputs, { maxSteps, maxOutput: 1000, history: true });
@@ -198,6 +200,34 @@ describe('yorumlayıcı', () => {
     expect(run(src).output).toEqual(['3 1 2 15']);
   });
 
+  // Her aritmetik operatör kendi işlemini yapmalı ("*" bir zamanlar "/" olarak derleniyordu).
+  it.each([
+    ['3 * 4', '12'],
+    ['12 / 4', '3'],
+    ['7 % 3', '1'],
+    ['7 mod 3', '1'],
+    ['7 div 2', '3'],
+    ['2 + 3 * 4', '14'],
+    ['(2 + 3) * 4', '20'],
+    ['2 * 3 / 4', '1.5'],
+    ['10 - 2 * 3', '4'],
+  ])('aritmetik: %s = %s', (expr: string, expected: string) => {
+    const r = run(`1- Başla
+2- X = ${expr}
+3- Print (X)
+4- Dur.`);
+    expect(r.status).toBe('ok');
+    expect(r.output).toEqual([expected]);
+  });
+
+  it('çarpma akış şeması metninde de çarpma olarak görünür', () => {
+    const p = prepare(`1- Başla
+2- X = 2 * 3
+3- Dur.`);
+    expect(p.ok).toBe(true);
+    expect(p.compiled!.code.some((ins) => ins.text.includes('2 * 3'))).toBe(true);
+  });
+
   it('atanmamış değişkeni okumak hatadır', () => {
     const r = run(`1- Başla
 2- Y = X + 1
@@ -214,6 +244,89 @@ describe('yorumlayıcı', () => {
 4- Dur.`);
     expect(r.error?.code).toBe('E_INDEX_RANGE');
     expect(r.error?.params).toEqual({ name: 'A', i: 10, size: 10 });
+  });
+
+  it('bir eleman fazlası olan dizi bildirimi sınırı aşar', () => {
+    const r = run(`1- Başla
+2- Dizi A[${MAX_ARRAY_SIZE + 1}]
+3- Dur.`);
+    expect(r.status).toBe('error');
+    expect(r.error?.code).toBe('E_ARRAY_TOO_LARGE');
+    expect(r.error?.line).toBe(2);
+    expect(r.error?.params).toEqual({ name: 'A', size: MAX_ARRAY_SIZE + 1, max: MAX_ARRAY_SIZE });
+  });
+
+  it('sınırdaki dizi bildirimi ve son indis geçerlidir', () => {
+    const r = run(`1- Başla
+2- Dizi A[${MAX_ARRAY_SIZE}]
+3- A[${MAX_ARRAY_SIZE - 1}] = 7
+4- Print (A[${MAX_ARRAY_SIZE - 1}])
+5- Dur.`);
+    expect(r.status).toBe('ok');
+    expect(r.output).toEqual(['7']);
+  });
+
+  it('bildirimsiz dizide sınırın üstündeki indise yazmak hatadır', () => {
+    const r = run(`1- Başla
+2- A[${MAX_ARRAY_SIZE}] = 1
+3- Dur.`);
+    expect(r.status).toBe('error');
+    expect(r.error?.code).toBe('E_ARRAY_TOO_LARGE');
+    expect(r.error?.params).toEqual({ name: 'A', size: MAX_ARRAY_SIZE + 1, max: MAX_ARRAY_SIZE });
+  });
+
+  it('boyutsuz bildirilen dizide de indis sınırı uygulanır', () => {
+    const r = run(`1- Başla
+2- Dizi A
+3- A[${MAX_ARRAY_SIZE}] = 1
+4- Dur.`);
+    expect(r.error?.code).toBe('E_ARRAY_TOO_LARGE');
+  });
+
+  it('bildirimsiz dizide sınırın altındaki indis geçerlidir', () => {
+    const r = run(`1- Başla
+2- A[${MAX_ARRAY_SIZE - 1}] = 1
+3- Print (A[${MAX_ARRAY_SIZE - 1}])
+4- Dur.`);
+    expect(r.status).toBe('ok');
+    expect(r.output).toEqual(['1']);
+  });
+
+  it('bildirilen boyutun dışındaki indis eskisi gibi E_INDEX_RANGE verir', () => {
+    const r = run(`1- Başla
+2- Dizi A[10]
+3- A[${MAX_ARRAY_SIZE * 5}] = 1
+4- Dur.`);
+    expect(r.error?.code).toBe('E_INDEX_RANGE');
+  });
+
+  it('devasa dizi bildirimi adım limitini beklemeden hemen hata verir', () => {
+    const r = run(`1- Başla
+2- Dizi A[1000000000]
+3- Dur.`);
+    expect(r.status).toBe('error');
+    expect(r.error?.code).toBe('E_ARRAY_TOO_LARGE');
+    expect(r.ms).toBeLessThan(1000);
+  });
+
+  it('devasa indise yazmak hemen hata verir', () => {
+    const r = run(`1- Başla
+2- A[1000000000000000] = 1
+3- Dur.`);
+    expect(r.status).toBe('error');
+    expect(r.error?.code).toBe('E_ARRAY_TOO_LARGE');
+  });
+
+  it('dizi sınırı hatasının iki dilde de mesajı vardır', () => {
+    const issue = { line: 2, label: '2', code: 'E_ARRAY_TOO_LARGE', params: { name: 'A', size: 5, max: 3 } };
+    for (const lang of ['tr', 'en'] as const) {
+      const f = formatIssue(issue, lang);
+      expect(f.message).toContain('A');
+      expect(f.message).toContain('5');
+      expect(f.message).toContain('3');
+      expect(f.message).not.toContain('E_ARRAY_TOO_LARGE');
+      expect(f.hint.length).toBeGreaterThan(0);
+    }
   });
 
   it('bildirilmemiş atanmamış dizi elemanı okunamaz', () => {

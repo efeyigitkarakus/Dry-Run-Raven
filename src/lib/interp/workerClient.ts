@@ -12,6 +12,8 @@ function spawn(): Worker {
 
 export interface RunHandlers {
   onEvent: (event: VMEvent) => void;
+  /** Toplu gelen Print çıktıları (sıralı). */
+  onPrints: (texts: string[]) => void;
   onDone: (result: RunResult) => void;
   onFatal: (message: string) => void;
 }
@@ -24,6 +26,7 @@ export interface StartOptions {
   stepMode: boolean;
   allowPrompt: boolean;
   breakpoints: number[];
+  inputAliases: string[];
 }
 
 /** Tek bir çalıştırma oturumu. */
@@ -45,6 +48,7 @@ export class RunSession {
 
   private receive(msg: FromWorker): void {
     if (this.ended) return;
+    if (msg.kind === 'prints') { this.handlers.onPrints(msg.texts); return; }
     if (msg.kind === 'event') {
       this.handlers.onEvent(msg.event);
       if (msg.event.type === 'done') this.finish(msg.event.result);
@@ -86,7 +90,10 @@ export class TestBatchSession {
   private worker: Worker | null;
   private ended = false;
 
-  constructor(source: string, cases: TestCaseMsg[], maxSteps: number, maxOutput: number, private handlers: TestBatchHandlers) {
+  constructor(
+    source: string, cases: TestCaseMsg[], maxSteps: number, maxOutput: number,
+    inputAliases: string[], private handlers: TestBatchHandlers,
+  ) {
     this.worker = spawn();
     this.worker.onmessage = (ev: MessageEvent<FromWorker>) => {
       const msg = ev.data;
@@ -101,7 +108,9 @@ export class TestBatchSession {
       }
     };
     this.worker.onerror = () => { if (!this.ended) this.handlers.onDone(0); this.dispose(); };
-    this.worker.postMessage({ cmd: 'testBatch', source, cases, maxSteps, maxOutput } satisfies ToWorker);
+    this.worker.postMessage({
+      cmd: 'testBatch', source, cases, maxSteps, maxOutput, inputAliases,
+    } satisfies ToWorker);
   }
 
   dispose(): void {
@@ -117,9 +126,10 @@ export function runTestBatch(
   cases: TestCaseMsg[],
   maxSteps: number,
   maxOutput: number,
+  inputAliases: string[],
   handlers: TestBatchHandlers,
 ): TestBatchSession {
-  return new TestBatchSession(source, cases, maxSteps, maxOutput, handlers);
+  return new TestBatchSession(source, cases, maxSteps, maxOutput, inputAliases, handlers);
 }
 
 export interface CompareHandlers {

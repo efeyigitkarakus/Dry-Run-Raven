@@ -3,7 +3,7 @@
  * Worker oturumları burada tutulur; UI yalnızca `app` durumunu okur.
  */
 
-import { app } from './state.svelte.js';
+import { app, type ConsoleLine } from './state.svelte.js';
 import { t } from './i18n';
 import { RunSession, TestBatchSession, CompareSession, SelfTestSession } from '../lib/interp/workerClient';
 import type { RunResult, VMEvent } from '../lib/interp/types';
@@ -24,11 +24,28 @@ let compareSession: CompareSession | null = null;
 let selfTestSession: SelfTestSession | null = null;
 let seenWarnings = new Set<string>();
 
+/**
+ * Worker'a gönderilecek ek giriş takma adları. Ayarlar reaktif bir proxy
+ * olduğundan postMessage ile kopyalanamaz; düz bir diziye alınır.
+ */
+function inputAliases(): string[] {
+  return [...app.settings.inputAliases];
+}
+
 function stopSelfTest(): void {
   if (!selfTestSession) return;
   selfTestSession.cancel();
   selfTestSession = null;
   app.selfTestState = { running: false, outcome: null };
+}
+
+/**
+ * Konsola satır ekler. Diziyi her seferinde kopyalamak yerine yerinde büyütür;
+ * kopyalama, çıktı uzadıkça satır sayısının karesiyle pahalılaşıyordu.
+ */
+function appendConsole(lines: ConsoleLine[]): void {
+  if (lines.length === 0) return;
+  app.consoleLines.push(...lines);
 }
 
 function pushWarning(code: string, line: number): boolean {
@@ -100,10 +117,11 @@ export function startRun(stepMode: boolean): void {
     stepMode,
     allowPrompt: true,
     breakpoints: [...app.breakpoints],
+    inputAliases: inputAliases(),
   }, {
     onEvent: (ev: VMEvent) => {
       if (ev.type === 'print') {
-        app.consoleLines = [...app.consoleLines, { kind: 'out', text: ev.text }];
+        appendConsole([{ kind: 'out', text: ev.text }]);
         return;
       }
       if (ev.type === 'pause') {
@@ -132,6 +150,9 @@ export function startRun(stepMode: boolean): void {
           app.consoleLines = [...app.consoleLines, { kind: 'info', text: `${t(app.lang, 'warning')}: ${f.message}` }];
         }
       }
+    },
+    onPrints: (texts) => {
+      appendConsole(texts.map((text) => ({ kind: 'out', text })));
     },
     onDone: (result) => {
       runSession = null;
@@ -236,7 +257,7 @@ export function runTests(): void {
     running: true, done: false, total: app.tests.length, results: [],
   };
   const cases = app.tests.map((s) => ({ name: s.name, inputs: splitInputs(s.inputs) }));
-  testSession = new TestBatchSession(app.source, cases, app.settings.maxSteps, app.settings.maxOutput, {
+  testSession = new TestBatchSession(app.source, cases, app.settings.maxSteps, app.settings.maxOutput, inputAliases(), {
     onResult: (_index, _name, result) => {
       const scenario = app.tests[_index];
       if (!scenario) return;
@@ -315,6 +336,7 @@ export function selfTest(): void {
     seed: (Date.now() >>> 0) || 1,
     maxSteps: app.settings.maxSteps,
     maxOutput: app.settings.maxOutput,
+    inputAliases: inputAliases(),
   }, {
     onDone: (outcome) => {
       app.selfTestState = { running: false, outcome };
@@ -350,6 +372,7 @@ export function compareReference(trials: number): void {
     seed: (Date.now() >>> 0) || 1,
     maxSteps: app.settings.maxSteps,
     maxOutput: app.settings.maxOutput,
+    inputAliases: inputAliases(),
   }, {
     onDone: (outcome, trialsRun) => {
       app.compareState = { running: false, trialsRun, outcome };

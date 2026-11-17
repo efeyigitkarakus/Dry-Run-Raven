@@ -15,6 +15,8 @@ export interface StartMsg {
   stepMode: boolean;
   allowPrompt: boolean;
   breakpoints: number[];
+  /** Ayarlardaki ek giriş takma adları; Worker kendi dil katmanına uygular. */
+  inputAliases: string[];
 }
 
 export interface ResumeMsg { cmd: 'resume'; resume: VMResume }
@@ -30,6 +32,7 @@ export interface TestBatchMsg {
   cases: TestCaseMsg[];
   maxSteps: number;
   maxOutput: number;
+  inputAliases: string[];
 }
 
 export interface CompareMsg {
@@ -40,6 +43,7 @@ export interface CompareMsg {
   seed: number;
   maxSteps: number;
   maxOutput: number;
+  inputAliases: string[];
 }
 
 export interface SelfTestMsg {
@@ -51,6 +55,7 @@ export interface SelfTestMsg {
   seed: number;
   maxSteps: number;
   maxOutput: number;
+  inputAliases: string[];
 }
 
 export type ToWorker = StartMsg | ResumeMsg | TestBatchMsg | CompareMsg | SelfTestMsg;
@@ -67,6 +72,8 @@ export type SelfTestOutcome =
 
 export type FromWorker =
   | { kind: 'event'; event: VMEvent }
+  /** Art arda gelen Print çıktıları; satır başına mesaj yerine parti hâlinde. */
+  | { kind: 'prints'; texts: string[] }
   | { kind: 'done'; result: RunResult }
   | { kind: 'testResult'; index: number; name: string; result: RunResult }
   | { kind: 'testDone'; count: number }

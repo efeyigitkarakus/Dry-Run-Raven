@@ -75,6 +75,20 @@ export function clearKeywordAliases(): void {
   extras.length = 0;
 }
 
+/**
+ * Ek giriş ("Sayı Gir") takma adlarını verilen listeyle değiştirir.
+ *
+ * Takma adlar modül durumunda tutulur ve her JavaScript ortamının (ana iş
+ * parçacığı, her Worker) kendi kopyası vardır; bu yüzden kaynak kodu
+ * ayrıştıran her ortam bu fonksiyonu kendi tarafında çağırmalıdır.
+ */
+export function setInputAliases(aliases: readonly string[]): void {
+  clearKeywordAliases();
+  for (const a of aliases) {
+    if (typeof a === 'string') addKeywordAlias('giris', a);
+  }
+}
+
 /** Sözcük (veya çok sözcüklü ifade) anahtar kelimeyse anlamını döndürür. */
 export function keywordMeaning(word: string): Meaning | null {
   const key = norm(word.trim());

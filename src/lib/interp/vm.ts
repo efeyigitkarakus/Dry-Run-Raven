@@ -12,6 +12,7 @@ import type { Instr } from '../lang/compiler';
 import type { AlgoIssue } from '../lang/messages';
 import { norm } from '../lang/keywords';
 import { formatValue, parseInputValue } from './format';
+import { MAX_ARRAY_SIZE } from './limits';
 import type {
   Scalar, MemorySnapshot, MemVar, VMEvent, VMResume, RunOptions, RunResult,
 } from './types';
@@ -84,7 +85,15 @@ class Env {
   hasVar(name: string): boolean { return this.vars.has(this.key(name)); }
   isArray(name: string): boolean { return this.vars.get(this.key(name))?.kind === 'array'; }
 
+  /** `count` eleman tutacak bir dizi sınırı aşıyorsa çalışmayı hatayla keser. */
+  private checkArraySize(name: string, count: number, ins: Instr): void {
+    if (count > MAX_ARRAY_SIZE) {
+      this.fail(ins, 'E_ARRAY_TOO_LARGE', { name, size: count, max: MAX_ARRAY_SIZE });
+    }
+  }
+
   declareArray(name: string, size: number | null, ins: Instr): void {
+    if (size !== null) this.checkArraySize(name, size, ins);
     const k = this.key(name);
     const existing = this.vars.get(k);
     if (existing && existing.kind === 'array') {
@@ -105,7 +114,10 @@ class Env {
     if (i < 0) this.fail(ins, 'E_INDEX_NEGATIVE', { name, i });
     const v = this.vars.get(this.key(name));
     if (!v) {
-      if (writing) return i; // dinamik dizi
+      if (writing) {
+        this.checkArraySize(name, i + 1, ins);
+        return i; // dinamik dizi
+      }
       this.fail(ins, 'E_UNDEFINED_ARRAY', { name });
     }
     if (v!.kind !== 'array') this.fail(ins, 'E_NOT_ARRAY', { name });
@@ -113,6 +125,8 @@ class Env {
     if (arr.size !== null && i >= arr.size) {
       this.fail(ins, 'E_INDEX_RANGE', { name, i, size: arr.size });
     }
+    // Boyutsuz bildirilen diziler indisle büyür; onlar da aynı sınıra tabidir.
+    this.checkArraySize(name, i + 1, ins);
     return i;
   }
 

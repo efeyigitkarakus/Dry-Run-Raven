@@ -93,6 +93,12 @@ export const MESSAGES: Record<string, MessageDef> = {
     hintTr: () => 'İndisin dizi sınırları içinde olduğunu kontrol edin (indis 0’dan başlar).',
     hintEn: () => 'Check that the index is in range (indexes start at 0).',
   },
+  E_ARRAY_TOO_LARGE: {
+    tr: (p) => `"${P(p, 'name')}" dizisi çok büyük: ${P(p, 'size')} eleman gerekiyor, en fazla ${P(p, 'max')} elemana izin verilir.`,
+    en: (p) => `Array "${P(p, 'name')}" is too large: ${P(p, 'size')} elements needed, at most ${P(p, 'max')} are allowed.`,
+    hintTr: () => 'Dizi boyutunu veya kullandığınız indisi küçültün.',
+    hintEn: () => 'Use a smaller array size or index.',
+  },
   E_INDEX_NEGATIVE: {
     tr: (p) => `${P(p, 'name')}[${P(p, 'i')}] erişimi: indis negatif olamaz.`,
     en: (p) => `${P(p, 'name')}[${P(p, 'i')}] access: index cannot be negative.`,
